@@ -1,0 +1,68 @@
+/* Game Library Custom Styles */
+
+body {
+    font-family: 'Nunito', 'Fredoka One', Arial, sans-serif;
+    background-color: #f3f7fa;
+}
+
+.gradient-text {
+    background: linear-gradient(90deg, #4D96FF 0%, #6BCB77 50%, #FFD93D 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.font-game {
+    font-family: 'Fredoka One', 'Nunito', Arial, sans-serif;
+    letter-spacing: 1.2px;
+}
+
+.bg-friv-blue {
+    background-color: #4D96FF !important;
+}
+.bg-friv-purple {
+    background-color: #9B59B6 !important;
+}
+.bg-friv-yellow {
+    background-color: #FFD93D !important;
+}
+.bg-friv-green {
+    background-color: #6BCB77 !important;
+}
+.bg-friv-pink {
+    background-color: #fa98b6 !important;
+}
+.bg-friv-orange {
+    background-color: #FF6B35 !important;
+}
+
+.rounded-xl {
+    border-radius: 1.25rem !important;
+}
+
+.shadow-xl {
+    box-shadow: 0 4px 32px 0 rgba(77,150,255,0.13), 0 2px 4px 0 rgba(0,0,0,0.04) !important;
+}
+.shadow {
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08) !important;
+}
+
+.transition-colors {
+    transition: background-color .2s, color .2s !important;
+}
+
+input, textarea, select, button {
+    font-family: inherit;
+}
+
+::-webkit-scrollbar {
+    width: 9px;
+    background: #eef3fa;
+}
+::-webkit-scrollbar-thumb {
+    background: #e2e2e2;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #d6dbdc;
+}
