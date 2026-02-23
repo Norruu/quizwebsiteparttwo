@@ -5,12 +5,10 @@
 ?>
     </main>
     
-    <!-- Footer -->
     <footer class="bg-gray-900 text-white mt-16">
         <div class="max-w-7xl mx-auto px-4 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 
-                <!-- Brand -->
                 <div class="md:col-span-1">
                     <div class="flex items-center gap-2 mb-4">
                         <div class="w-10 h-10 bg-gradient-to-br from-friv-orange to-friv-yellow rounded-xl flex items-center justify-center">
@@ -23,7 +21,6 @@
                     </p>
                 </div>
                 
-                <!-- Quick Links -->
                 <div>
                     <h4 class="font-bold text-lg mb-4">Quick Links</h4>
                     <ul class="space-y-2">
@@ -33,18 +30,17 @@
                     </ul>
                 </div>
                 
-                <!-- Support -->
                 <div>
-                    <h4 class="font-bold text-lg mb-4">Support</h4>
+                   <h4 class="font-bold text-lg mb-4">Support</h4>
                     <ul class="space-y-2">
                         <li><a href="#" class="text-gray-400 hover:text-friv-yellow transition-colors">FAQ</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-friv-yellow transition-colors">Contact Us</a></li>
+                        <li><a href="<?= baseUrl('/about.php') ?>" class="text-gray-400 hover:text-friv-yellow transition-colors">About Us</a></li>
+                        <li><a href="<?= baseUrl('/about.php') ?>" class="inline-block mt-1 bg-friv-yellow text-gray-900 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-yellow-400 transition">Contact Us</a></li>
                         <li><a href="#" class="text-gray-400 hover:text-friv-yellow transition-colors">Terms of Service</a></li>
                         <li><a href="#" class="text-gray-400 hover:text-friv-yellow transition-colors">Privacy Policy</a></li>
                     </ul>
-                </div>
+                                    </div>
                 
-                <!-- Stats -->
                 <div>
                     <h4 class="font-bold text-lg mb-4">Platform Stats</h4>
                     <div class="space-y-3">
@@ -93,7 +89,11 @@
         </div>
     </footer>
     
-    <!-- Global JavaScript -->
+    <script>
+        const SITE_URL = "<?= baseUrl('/') ?>";
+    </script>
+
+    <script src="<?= asset('js/utils.js') ?>"></script>
     <script src="<?= asset('js/app.js') ?>"></script>
 </body>
 </html>

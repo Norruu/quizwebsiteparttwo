@@ -30,10 +30,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
             ];
             
             // Handle thumbnail upload
-            if (!empty($_FILES['thumbnail']['name'])) {
-                $thumbnail = uploadImage($_FILES['thumbnail'], GAME_THUMBNAIL_PATH, 'game_');
-                if ($thumbnail) {
-                    $gameData['thumbnail'] = $thumbnail;
+            if (!empty($_FILES['thumbnail']['name']) && $_FILES['thumbnail']['error'] === UPLOAD_ERR_OK) {
+                // Define upload path
+                $uploadDir = __DIR__ . '/../assets/images/games/';
+                
+                // Create directory if it doesn't exist
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                
+                // Generate unique filename
+                $extension = strtolower(pathinfo($_FILES['thumbnail']['name'], PATHINFO_EXTENSION));
+                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                
+                if (in_array($extension, $allowedExtensions)) {
+                    $filename = 'game_' . time() . '_' . uniqid() . '.' . $extension;
+                    $targetPath = $uploadDir . $filename;
+                    
+                    if (move_uploaded_file($_FILES['thumbnail']['tmp_name'], $targetPath)) {
+                        $gameData['thumbnail'] = $filename;
+                    } else {
+                        flash('error', 'Failed to upload thumbnail');
+                    }
+                } else {
+                    flash('error', 'Invalid image format. Allowed: JPG, PNG, GIF, WebP');
                 }
             }
             
@@ -126,10 +146,10 @@ $statuses = ['active', 'inactive', 'maintenance'];
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                     <!-- Thumbnail -->
                     <div class="relative h-40 bg-gray-200">
-                        <img src="<?= asset('images/games/' . $game['thumbnail']) ?>" 
+                        <img src="<?= baseUrl('/assets/images/games/' . $game['thumbnail']) ?>" 
                              alt="<?= e($game['title']) ?>"
                              class="w-full h-full object-cover"
-                             onerror="this.src='<?= asset('images/games/default-game.png') ?>'">
+                             onerror="this.src='<?= baseUrl('/assets/images/games/default-game.png') ?>'">
                         
                         <!-- Status Badge -->
                         <span class="absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-bold <?= statusColor($game['status']) ?>">

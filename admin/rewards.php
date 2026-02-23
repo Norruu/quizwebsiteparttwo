@@ -26,12 +26,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf()) {
             ];
             
             // Handle image upload
-            if (!empty($_FILES['image']['name'])) {
-                $image = uploadImage($_FILES['image'], REWARD_IMAGE_PATH, 'reward_');
-                if ($image) {
-                    $rewardData['image'] = $image;
+            if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                // Define upload path
+                $uploadDir = __DIR__ . '/../assets/images/rewards/';
+                
+                // Create directory if it doesn't exist
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                
+                // Generate unique filename
+                $extension = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                
+                if (in_array($extension, $allowedExtensions)) {
+                    $filename = 'reward_' . time() . '_' . uniqid() . '.' . $extension;
+                    $targetPath = $uploadDir . $filename;
+                    
+                    if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
+                        $rewardData['image'] = $filename;
+                    } else {
+                        flash('error', 'Failed to upload image');
+                    }
+                } else {
+                    flash('error', 'Invalid image format. Allowed: JPG, PNG, GIF, WebP');
                 }
             }
+
             
             if ($action === 'create') {
                 if (empty($rewardData['image'])) {
@@ -112,7 +133,7 @@ $statuses = ['active', 'inactive', 'out_of_stock'];
                     + Add Reward
                 </button>
             </div>
-        </div>
+        </div> 
         
         <!-- Rewards Grid -->
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -120,10 +141,12 @@ $statuses = ['active', 'inactive', 'out_of_stock'];
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                     <!-- Image -->
                     <div class="relative h-40 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                        <?php if ($reward['image']): ?>
-                            <img src="<?= asset('images/rewards/' . $reward['image']) ?>" 
+                        <?php if (!empty($reward['image']) && $reward['image'] !== 'default-reward.png'): ?>
+                            <img src="<?= baseUrl('/assets/images/rewards/' . $reward['image']) ?>" 
                                  alt="<?= e($reward['name']) ?>"
-                                 class="max-h-32 object-contain">
+                                 class="max-h-32 object-contain"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <span class="text-6xl hidden">🎁</span>
                         <?php else: ?>
                             <span class="text-6xl">🎁</span>
                         <?php endif; ?>

@@ -1,6 +1,6 @@
 /**
- * Fruit Catch Game
- * Catch falling fruits to score points!
+ * Harvest Catch Game (NIR Edition)
+ * Catch falling local crops to score points!
  */
 
 let gameCanvas, ctx;
@@ -16,16 +16,17 @@ let startTime;
 let basket = { x: 0, y: 0, width: 80, height: 60, speed: 8 };
 let fruits = [];
 let particles = [];
+let indicators = []; // Array to hold floating catch indicators
 
-// Fruit types
+// Crop types specific to NIR agriculture - WITH LABELS (names)
 const fruitTypes = [
-    { emoji: '🍎', points: 10, color: '#ff4757' },
-    { emoji: '🍊', points: 15, color: '#ffa502' },
-    { emoji: '🍋', points: 20, color: '#ffdd59' },
-    { emoji: '🍇', points: 25, color: '#8e44ad' },
-    { emoji: '🍓', points: 30, color: '#e84393' },
-    { emoji: '💎', points: 100, color: '#00d2d3' }, // Bonus
-    { emoji: '💀', points: -50, color: '#2d3436', bad: true } // Rotten
+    { emoji: '🌾', name: 'Rice', points: 10, color: '#f1c40f' },
+    { emoji: '🥥', name: 'Coconut', points: 15, color: '#ecf0f1' },
+    { emoji: '🥭', name: 'Mango', points: 20, color: '#e67e22' },
+    { emoji: '🍌', name: 'Banana', points: 25, color: '#f39c12' },
+    { emoji: '🐟', name: 'Tilapia', points: 30, color: '#3498db' },
+    { emoji: '💎', name: 'Bonus Point', points: 100, color: '#00d2d3' }, 
+    { emoji: '🐛', name: 'Pest', points: -50, color: '#ff4757', bad: true } 
 ];
 
 // Input state
@@ -120,12 +121,12 @@ function showStartScreen() {
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 48px Fredoka One, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('🧺 Fruit Catch! 🍎', gameCanvas.width / 2, gameCanvas.height / 2 - 60);
+    ctx.fillText('🧺 Harvest Catch! 🌾', gameCanvas.width / 2, gameCanvas.height / 2 - 60);
     
     ctx.font = '24px Nunito, sans-serif';
     ctx.fillStyle = '#a0a0a0';
-    ctx.fillText('Catch fruits to score points!', gameCanvas.width / 2, gameCanvas.height / 2);
-    ctx.fillText('Avoid the 💀 rotten fruits!', gameCanvas.width / 2, gameCanvas.height / 2 + 35);
+    ctx.fillText('Catch local NIR crops to score points!', gameCanvas.width / 2, gameCanvas.height / 2);
+    ctx.fillText('Avoid the 🐛 pests!', gameCanvas.width / 2, gameCanvas.height / 2 + 35);
     
     ctx.fillStyle = '#4D96FF';
     ctx.font = 'bold 28px Nunito, sans-serif';
@@ -144,6 +145,7 @@ function startGame() {
     level = 1;
     fruits = [];
     particles = [];
+    indicators = []; // Reset indicators
     startTime = Date.now();
     
     // Start game loop
@@ -151,6 +153,9 @@ function startGame() {
     
     // Start spawning fruits
     spawnFruit();
+    
+    // Play start/click sound
+    if (typeof playGameSound === 'function') playGameSound('click');
 }
 
 function gameLoop() {
@@ -184,8 +189,18 @@ function update() {
             // Caught!
             if (fruit.bad) {
                 lives--;
-                createParticles(fruit.x, fruit.y, '#ff4757', 10);
+                createParticles(fruit.x, fruit.y, fruit.color, 10);
                 playSound('fail');
+                
+                // Add negative indicator with LABEL
+                indicators.push({
+                    x: basket.x + basket.width / 2,
+                    y: basket.y,
+                    text: `${fruit.name}! ${fruit.points}`,
+                    color: '#ff4757', // Red text for bad catch
+                    alpha: 1,
+                    life: 50
+                });
                 
                 if (lives <= 0) {
                     endGame();
@@ -196,8 +211,21 @@ function update() {
                 createParticles(fruit.x, fruit.y, fruit.color, 8);
                 playSound('success');
                 
-                // Update score display
-                document.getElementById('current-score').textContent = score;
+                // Add positive indicator with LABEL
+                indicators.push({
+                    x: basket.x + basket.width / 2,
+                    y: basket.y,
+                    text: `${fruit.name} +${fruit.points}`,
+                    color: '#ffffff', // White text
+                    alpha: 1,
+                    life: 50
+                });
+                
+                // SAFETY CHECK ADDED HERE TO PREVENT FREEZE
+                const scoreElement = document.getElementById('current-score');
+                if (scoreElement) {
+                    scoreElement.textContent = score;
+                }
             }
             
             fruits.splice(i, 1);
@@ -230,6 +258,18 @@ function update() {
         }
     }
     
+    // Update floating indicators
+    for (let i = indicators.length - 1; i >= 0; i--) {
+        const ind = indicators[i];
+        ind.y -= 1.5; // Float upwards
+        ind.life--;
+        ind.alpha = Math.max(0, ind.life / 50); // Fade out based on life
+        
+        if (ind.life <= 0) {
+            indicators.splice(i, 1);
+        }
+    }
+    
     // Increase difficulty over time
     const elapsed = (Date.now() - startTime) / 1000;
     level = Math.floor(elapsed / 30) + 1;
@@ -238,8 +278,8 @@ function update() {
 function render() {
     // Clear canvas with gradient background
     const gradient = ctx.createLinearGradient(0, 0, 0, gameCanvas.height);
-    gradient.addColorStop(0, '#667eea');
-    gradient.addColorStop(1, '#764ba2');
+    gradient.addColorStop(0, '#556270');
+    gradient.addColorStop(1, '#4ECDC4');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
     
@@ -278,6 +318,21 @@ function render() {
         ctx.fill();
         ctx.globalAlpha = 1;
     }
+    
+    // Draw floating indicators
+    for (const ind of indicators) {
+        ctx.save();
+        ctx.globalAlpha = ind.alpha;
+        
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; // Drop shadow fallback instead of complex filter for performance
+        ctx.font = 'bold 18px Nunito, sans-serif'; 
+        ctx.textAlign = 'center';
+        ctx.fillText(ind.text, ind.x + 1, ind.y + 1); // Slight offset for shadow
+
+        ctx.fillStyle = ind.color;
+        ctx.fillText(ind.text, ind.x, ind.y);
+        ctx.restore();
+    }
 }
 
 function spawnFruit() {
@@ -291,10 +346,10 @@ function spawnFruit() {
         // 5% chance for bonus
         fruitType = fruitTypes.find(f => f.emoji === '💎');
        } else if (rand < 0.15 + level * 0.02) {
-        // Increasing chance for rotten fruit as level increases
+        // Increasing chance for pest as level increases
         fruitType = fruitTypes.find(f => f.bad);
     } else {
-        // Regular fruit
+        // Regular crop
         const regularFruits = fruitTypes.filter(f => !f.bad && f.emoji !== '💎');
         fruitType = regularFruits[Math.floor(Math.random() * regularFruits.length)];
     }
@@ -309,13 +364,14 @@ function spawnFruit() {
         rotation: 0,
         rotationSpeed: (Math.random() - 0.5) * 0.2,
         emoji: fruitType.emoji,
+        name: fruitType.name, // Pass the name down to the spawned object
         points: fruitType.points,
         color: fruitType.color,
         bad: fruitType.bad || false,
         isBonus: fruitType.emoji === '💎'
     });
     
-    // Schedule next fruit spawn (faster as level increases)
+    // Schedule next spawn (faster as level increases)
     const spawnDelay = Math.max(300, 1000 - level * 100);
     setTimeout(spawnFruit, spawnDelay + Math.random() * 500);
 }
@@ -361,6 +417,8 @@ function endGame() {
     gameState = 'ended';
     cancelAnimationFrame(animationId);
     
+    if (typeof playGameSound === 'function') playGameSound('gameover');
+    
     const playTime = Math.floor((Date.now() - startTime) / 1000);
     
     // Submit score
@@ -399,12 +457,11 @@ function restartGame() {
     location.reload();
 }
 
-// Sound effects (optional)
+// Wrapper for sound calls
 function playSound(type) {
-    // Implement if sound files are available
-    // const audio = new Audio(`/assets/sounds/${type}.mp3`);
-    // audio.volume = 0.3;
-    // audio.play().catch(() => {});
+    if (typeof playGameSound === 'function') {
+        playGameSound(type);
+    }
 }
 
 // Expose restart function globally

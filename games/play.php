@@ -47,7 +47,6 @@ $pageTitle = $game['title'];
 
 <div class="min-h-screen py-8 px-4">
     <div class="max-w-6xl mx-auto">
-        <!-- Back Button -->
         <a href="<?= baseUrl('/games/') ?>" 
            class="inline-flex items-center gap-2 text-gray-600 hover:text-friv-blue mb-6 transition-colors">
             <span>←</span>
@@ -55,10 +54,8 @@ $pageTitle = $game['title'];
         </a>
         
         <div class="grid lg:grid-cols-3 gap-8">
-            <!-- Game Area -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
-                    <!-- Game Header -->
                     <div class="bg-gradient-to-r from-friv-blue to-friv-purple p-4 flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <span class="text-3xl">🎮</span>
@@ -68,22 +65,18 @@ $pageTitle = $game['title'];
                             </div>
                         </div>
                         <div class="flex items-center gap-4">
-                            <!-- Sound Toggle -->
                             <button id="sound-toggle" class="text-white/80 hover:text-white transition-colors" title="Toggle Sound">
                                 <span id="sound-on">🔊</span>
                                 <span id="sound-off" class="hidden">🔇</span>
                             </button>
-                            <!-- Fullscreen Toggle -->
                             <button id="fullscreen-toggle" class="text-white/80 hover:text-white transition-colors" title="Fullscreen">
                                 ⛶
                             </button>
                         </div>
                     </div>
                     
-                    <!-- Game Container -->
                     <div id="game-container" class="relative bg-gray-900 aspect-video flex items-center justify-center">
                         <?php if (!$playLimit['allowed']): ?>
-                            <!-- Daily Limit Reached -->
                             <div class="text-center p-8">
                                 <div class="text-6xl mb-4">⏰</div>
                                 <h2 class="text-2xl font-bold text-white mb-2">Daily Limit Reached</h2>
@@ -97,19 +90,16 @@ $pageTitle = $game['title'];
                                 </a>
                             </div>
                         <?php else: ?>
-                            <!-- Game will be loaded here -->
                             <div id="game-loading" class="text-center">
                                 <div class="animate-spin w-16 h-16 border-4 border-friv-blue border-t-transparent rounded-full mx-auto mb-4"></div>
                                 <p class="text-white">Loading game...</p>
                             </div>
                             
                             <div id="game-frame" class="w-full h-full hidden">
-                                <!-- Game content loaded via AJAX or iframe -->
-                            </div>
+                                </div>
                         <?php endif; ?>
                     </div>
                     
-                    <!-- Game Controls Bar -->
                     <div class="bg-gray-100 p-4 flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div class="text-center">
@@ -134,9 +124,7 @@ $pageTitle = $game['title'];
                 </div>
             </div>
             
-            <!-- Sidebar -->
             <div class="space-y-6">
-                <!-- Game Info Card -->
                 <div class="bg-white rounded-2xl shadow-xl p-6">
                     <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
                         <span>ℹ️</span> Game Info
@@ -166,7 +154,6 @@ $pageTitle = $game['title'];
                     </div>
                 </div>
                 
-                <!-- How to Play -->
                 <div class="bg-white rounded-2xl shadow-xl p-6">
                     <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
                         <span>📖</span> How to Play
@@ -176,7 +163,6 @@ $pageTitle = $game['title'];
                     </p>
                 </div>
                 
-                <!-- Points System -->
                 <div class="bg-gradient-to-br from-friv-yellow/20 to-friv-orange/20 rounded-2xl p-6">
                     <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
                         <span>💡</span> Earn Points
@@ -201,7 +187,6 @@ $pageTitle = $game['title'];
     </div>
 </div>
 
-<!-- Game Configuration Script -->
 <script>
     const GAME_CONFIG = {
         gameId: <?= $game['id'] ?>,
@@ -218,7 +203,43 @@ $pageTitle = $game['title'];
     // Load the specific game
     document.addEventListener('DOMContentLoaded', function() {
         loadGame('<?= e($game['slug']) ?>');
+        initSoundControl();
     });
+    
+    function initSoundControl() {
+        const soundToggle = document.getElementById('sound-toggle');
+        const soundOn = document.getElementById('sound-on');
+        const soundOff = document.getElementById('sound-off');
+        
+        // Load initial state
+        let muted = localStorage.getItem('game_muted') === 'true';
+        updateUI(muted);
+        
+        // Sync with Utils
+        if (typeof setGameSoundMute === 'function') {
+            setGameSoundMute(muted);
+        }
+        
+        soundToggle.addEventListener('click', function() {
+            muted = !muted;
+            updateUI(muted);
+            
+            // Sync with Utils
+            if (typeof setGameSoundMute === 'function') {
+                setGameSoundMute(muted);
+            }
+        });
+        
+        function updateUI(isMuted) {
+            if (isMuted) {
+                soundOn.classList.add('hidden');
+                soundOff.classList.remove('hidden');
+            } else {
+                soundOn.classList.remove('hidden');
+                soundOff.classList.add('hidden');
+            }
+        }
+    }
     
     function loadGame(slug) {
         const container = document.getElementById('game-frame');
@@ -226,7 +247,7 @@ $pageTitle = $game['title'];
         
         // Dynamically load game script
         const script = document.createElement('script');
-        script.src = '<?= asset('js/games/') ?>' + slug + '.js';
+        script.src = '../assets/js/games/' + slug + '.js';
         script.onload = function() {
             loading.classList.add('hidden');
             container.classList.remove('hidden');

@@ -175,9 +175,10 @@ $users = Database::fetchAll(
                         <tr class="hover:bg-gray-50 <?= $isCurrentUser ? 'bg-blue-50' : '' ?>">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <img src="<?= asset('images/avatars/' . ($user['avatar'] ?? 'default-avatar.png')) ?>" 
+                                    <img src="<?= baseUrl('/assets/images/avatars/' . ($user['avatar'] ?? 'default-avatar.png')) ?>" 
                                          alt="<?= e($user['username']) ?>" 
-                                         class="w-10 h-10 rounded-full object-cover">
+                                         class="w-10 h-10 rounded-full object-cover"
+                                         onerror="this.src='<?= baseUrl('/assets/images/avatars/default-avatar.png') ?>'">
                                     <div>
                                         <p class="font-semibold text-gray-800">
                                             <?= e($user['username']) ?>
@@ -376,4 +377,3 @@ function closeAddPointsModal() {
 </script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
-            

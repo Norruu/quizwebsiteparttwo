@@ -14,7 +14,7 @@ if (!defined('APP_RUNNING')) {
 // ============================================
 define('APP_ENV', 'development'); // 'development' or 'production'
 define('APP_DEBUG', APP_ENV === 'development');
-define('APP_NAME', 'Game Library');
+define('APP_NAME', 'Bountiful Harvest');
 define('APP_VERSION', '1.0.0');
 define('APP_URL', 'http://localhost/game-library');
 

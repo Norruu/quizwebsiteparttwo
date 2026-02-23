@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
             
-            <form method="POST" action="" class="space-y-5">
+            <form method="POST" action="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>" class="space-y-5">
                 <?= csrfField() ?>
                 
                 <!-- Email -->
@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         
         <!-- Demo Accounts (Remove in production) -->
-        <?php if (APP_DEBUG): ?>
+        <!-- 
         <div class="mt-6 bg-blue-50 rounded-2xl p-4">
             <p class="text-blue-800 font-bold text-sm mb-2">🧪 Demo Accounts (Dev Only)</p>
             <div class="text-sm text-blue-700 space-y-1">
@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p><strong>Player:</strong> player@gamelibrary.com / Player@123</p>
             </div>
         </div>
-        <?php endif; ?>
+        -->
     </div>
 </div>
 

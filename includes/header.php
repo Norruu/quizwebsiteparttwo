@@ -18,7 +18,7 @@ $isLoggedIn = Auth::check();
 $isAdmin = Auth::isAdmin();
 
 // Page title (can be overridden before including header)
-$pageTitle = $pageTitle ?? 'Game Library';
+$pageTitle = $pageTitle ?? 'Bountiful Harvest';
 $bodyClass = $bodyClass ?? '';
 ?>
 <!DOCTYPE html>

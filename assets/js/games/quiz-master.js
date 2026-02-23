@@ -1,12 +1,16 @@
 /**
- * Quiz Master Game
- * Answer trivia questions to earn points!
+ * NIR Agri-Quiz Game
+ * Answer trivia questions about Negros Island Region agriculture!
+ * Features a Leveling System and Health/Lives.
  */
 
 let gameCanvas, ctx;
-let gameState = 'ready';
+let gameState = 'ready'; // ready, playing, levelup, ended
 let score = 0;
-let currentQuestion = 0;
+let lives = 3;
+let level = 1;
+let currentQuestionIndex = 0;
+let questionsAnsweredInLevel = 0;
 let timeLeft = 15;
 let correctAnswers = 0;
 let gameConfig;
@@ -14,71 +18,39 @@ let timerInterval;
 let selectedAnswer = null;
 let showingResult = false;
 
-// Quiz questions
-const questions = [
-    {
-        question: "What is the capital of France?",
-        options: ["London", "Berlin", "Paris", "Madrid"],
-        correct: 2,
-        category: "Geography"
-    },
-    {
-        question: "Which planet is known as the Red Planet?",
-        options: ["Venus", "Mars", "Jupiter", "Saturn"],
-        correct: 1,
-        category: "Science"
-    },
-    {
-        question: "What is 15 × 7?",
-        options: ["95", "105", "115", "125"],
-        correct: 1,
-        category: "Math"
-    },
-    {
-        question: "Who painted the Mona Lisa?",
-        options: ["Van Gogh", "Picasso", "Da Vinci", "Michelangelo"],
-        correct: 2,
-        category: "Art"
-    },
-    {
-        question: "What is the largest ocean on Earth?",
-        options: ["Atlantic", "Indian", "Arctic", "Pacific"],
-        correct: 3,
-        category: "Geography"
-    },
-    {
-        question: "In what year did World War II end?",
-        options: ["1943", "1944", "1945", "1946"],
-        correct: 2,
-        category: "History"
-    },
-    {
-        question: "What is the chemical symbol for Gold?",
-        options: ["Go", "Gd", "Au", "Ag"],
-        correct: 2,
-        category: "Science"
-    },
-    {
-        question: "Which country is home to the kangaroo?",
-        options: ["New Zealand", "South Africa", "Australia", "Brazil"],
-        correct: 2,
-        category: "Geography"
-    },
-    {
-        question: "How many sides does a hexagon have?",
-        options: ["5", "6", "7", "8"],
-        correct: 1,
-        category: "Math"
-    },
-    {
-        question: "What is the fastest land animal?",
-        options: ["Lion", "Cheetah", "Horse", "Gazelle"],
-        correct: 1,
-        category: "Nature"
-    }
-];
+// NIR Agriculture & Production Questions Grouped by Difficulty
+const questionBank = {
+    easy: [
+        { question: "Which crop makes Negros the 'Sugarbowl of the Philippines'?", options: ["Corn", "Rice", "Sugarcane", "Coconut"], correct: 2, category: "Agriculture" },
+        { question: "What animal is commonly raised in local backyards for its pork?", options: ["Cow", "Goat", "Pig (Swine)", "Sheep"], correct: 2, category: "Livestock" },
+        { question: "What staple grain is primarily grown in the irrigated flatlands of the region?", options: ["Wheat", "Rice", "Oats", "Barley"], correct: 1, category: "Agriculture" },
+        { question: "What sweet tropical fruit from Guimaras and Negros is heavily exported?", options: ["Papaya", "Mango", "Durian", "Lanzones"], correct: 1, category: "Production" },
+        { question: "Bangus is heavily farmed in coastal aquaculture. What is its English name?", options: ["Milkfish", "Tilapia", "Catfish", "Salmon"], correct: 0, category: "Aquaculture" },
+        { question: "What is the primary commercial product extracted from sugarcane?", options: ["Flour", "Salt", "Sugar", "Vinegar"], correct: 2, category: "Production" },
+        { question: "What farm animal is raised in large poultry houses for eggs and meat?", options: ["Duck", "Quail", "Turkey", "Chicken"], correct: 3, category: "Livestock" },
+    ],
+    medium: [
+        { question: "What sweet local flatbread is primarily made using muscovado sugar?", options: ["Pandesal", "Piaya", "Ensaymada", "Hopia"], correct: 1, category: "Production" },
+        { question: "Which elevated NIR city is heavily known for its vegetable terraces?", options: ["Bacolod", "Dumaguete", "Canlaon", "Sipalay"], correct: 2, category: "Geography" },
+        { question: "Copra is the dried meat of which widely grown agricultural product?", options: ["Mango", "Cacao", "Coconut", "Papaya"], correct: 2, category: "Agriculture" },
+        { question: "What raw material grown in local farms is fermented and processed into Tablea?", options: ["Coffee Beans", "Sugarcane", "Cacao Pods", "Cassava"], correct: 2, category: "Production" },
+        { question: "What farming method avoids synthetic pesticides and is heavily championed in Negros?", options: ["Hydroponics", "Slash-and-burn", "Organic Farming", "Monoculture"], correct: 2, category: "Science" },
+        { question: "Saba is a widely grown local variety of which fruit used for Turon?", options: ["Mango", "Banana", "Pineapple", "Guava"], correct: 1, category: "Agriculture" },
+        { question: "Which city is known as the 'Rice Granary of Negros Occidental'?", options: ["Bago City", "Kabankalan", "Victorias", "Silay"], correct: 0, category: "Geography" },
+    ],
+    hard: [
+        { question: "What is the traditional term for large agricultural sugarcane estates in Negros?", options: ["Plantation", "Hacienda", "Ranch", "Orchard"], correct: 1, category: "History" },
+        { question: "What is the fibrous residue left after sugarcane stalks are crushed, often used for fuel?", options: ["Bagasse", "Molasses", "Mudpress", "Ash"], correct: 0, category: "Science" },
+        { question: "What local harvest season is traditionally referred to as 'Tiempo Suerte'?", options: ["Rice Harvest", "Mango Season", "Sugarcane Harvest", "Fishing Season"], correct: 2, category: "Culture" },
+        { question: "Which hardy coffee bean variety thrives in the lower mountain elevations of the region?", options: ["Arabica", "Robusta", "Liberica", "Excelsa"], correct: 1, category: "Agriculture" },
+        { question: "What specific agricultural pest bores into the stems of local rice and sugarcane?", options: ["Locust", "Aphid", "Stem Borer", "Weevil"], correct: 2, category: "Science" },
+        { question: "What is the term for healthy, unrefined local sugar that retains its natural molasses?", options: ["Refined White", "Muscovado", "Confectioners", "Brown Sugar"], correct: 1, category: "Production" },
+        { question: "What byproduct of sugarcane milling is commonly fermented to produce bioethanol?", options: ["Bagasse", "Molasses", "Mudpress", "Juice"], correct: 1, category: "Science" },
+    ]
+};
 
-let shuffledQuestions = [];
+let currentLevelQuestions = [];
+let currentQuestion = null;
 
 function initGame(container, config) {
     gameConfig = config;
@@ -102,7 +74,7 @@ function resizeCanvas() {
     gameCanvas.width = rect.width;
     gameCanvas.height = rect.height;
     
-    if (gameState === 'playing') {
+    if (gameState === 'playing' || gameState === 'levelup') {
         render();
     }
 }
@@ -168,33 +140,53 @@ function selectAnswer(index) {
     showingResult = true;
     clearInterval(timerInterval);
     
-    const question = shuffledQuestions[currentQuestion];
-    const isCorrect = index === question.correct;
+    const isCorrect = index === currentQuestion.correct;
     
     if (isCorrect) {
+        if (typeof playGameSound === 'function') playGameSound('success');
         const timeBonus = Math.floor(timeLeft * 2);
-        const questionScore = 50 + timeBonus;
+        const questionScore = (level * 50) + timeBonus; // Higher levels give more base points
         score += questionScore;
         correctAnswers++;
-        document.getElementById('current-score').textContent = score;
+        questionsAnsweredInLevel++;
+        
+        const scoreElement = document.getElementById('current-score');
+        if(scoreElement) scoreElement.textContent = score;
+        
+    } else {
+        lives--; // Wrong answer costs a life
+        if (typeof playGameSound === 'function') playGameSound('fail');
     }
     
     render();
     
-    // Show result for 2 seconds then move to next question
+    // Show result for 1.5 seconds then evaluate next step
     setTimeout(() => {
         showingResult = false;
         selectedAnswer = null;
-        currentQuestion++;
         
-        if (currentQuestion >= shuffledQuestions.length) {
-            endGame();
-        } else {
-            timeLeft = 15;
-            startTimer();
-            render();
+        if (lives <= 0) {
+            endGame(false); // Game Over (Lost)
+            return;
         }
-    }, 2000);
+        
+        // Level up condition: 5 correct answers per level
+        if (questionsAnsweredInLevel >= 5) {
+            if (level === 3) {
+                endGame(true); // Game Over (Won!)
+            } else {
+                levelUp();
+            }
+        } else {
+            currentQuestionIndex++;
+            if (currentQuestionIndex >= currentLevelQuestions.length) {
+                // Failsafe: if we run out of questions in the array, shuffle and restart array
+                currentLevelQuestions = [...currentLevelQuestions].sort(() => Math.random() - 0.5);
+                currentQuestionIndex = 0;
+            }
+            prepareNextQuestion();
+        }
+    }, 1500);
 }
 
 function showStartScreen() {
@@ -206,12 +198,14 @@ function showStartScreen() {
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 48px Fredoka One, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('❓ Quiz Master!', gameCanvas.width / 2, gameCanvas.height / 2 - 80);
+    ctx.fillText('❓ NIR Agri-Quiz!', gameCanvas.width / 2, gameCanvas.height / 2 - 80);
     
     ctx.font = '24px Nunito, sans-serif';
     ctx.fillStyle = '#a0a0a0';
-    ctx.fillText('Test your knowledge!', gameCanvas.width / 2, gameCanvas.height / 2 - 20);
-    ctx.fillText(`${questions.length} questions • 15 seconds each`, gameCanvas.width / 2, gameCanvas.height / 2 + 20);
+    ctx.fillText('Test your local farming knowledge!', gameCanvas.width / 2, gameCanvas.height / 2 - 20);
+    
+    ctx.fillStyle = '#FF4757';
+    ctx.fillText('❤️ 3 Lives • 3 Levels', gameCanvas.width / 2, gameCanvas.height / 2 + 20);
     
     ctx.fillStyle = '#4D96FF';
     ctx.font = 'bold 28px Nunito, sans-serif';
@@ -219,19 +213,55 @@ function showStartScreen() {
 }
 
 function startGame() {
-    gameState = 'playing';
     score = 0;
-    currentQuestion = 0;
+    lives = 3;
+    level = 1;
     correctAnswers = 0;
-    timeLeft = 15;
-    selectedAnswer = null;
+    if (typeof playGameSound === 'function') playGameSound('click');
+    loadLevel(level);
+}
+
+function loadLevel(lvl) {
+    gameState = 'playing';
+    questionsAnsweredInLevel = 0;
+    currentQuestionIndex = 0;
+    
+    // Select questions based on level
+    let pool = [];
+    if (lvl === 1) pool = questionBank.easy;
+    else if (lvl === 2) pool = questionBank.medium;
+    else pool = questionBank.hard;
+    
+    // Shuffle the pool for this level
+    currentLevelQuestions = [...pool].sort(() => Math.random() - 0.5);
+    
+    prepareNextQuestion();
+}
+
+function prepareNextQuestion() {
+    currentQuestion = currentLevelQuestions[currentQuestionIndex];
     showingResult = false;
     
-    // Shuffle questions
-    shuffledQuestions = [...questions].sort(() => Math.random() - 0.5);
+    // Set time limits based on level difficulty
+    if (level === 1) timeLeft = 15;
+    else if (level === 2) timeLeft = 12;
+    else timeLeft = 10;
     
     startTimer();
     render();
+}
+
+function levelUp() {
+    gameState = 'levelup';
+    if (typeof playGameSound === 'function') playGameSound('levelup');
+    clearInterval(timerInterval);
+    level++;
+    
+    render(); // Draw the level up screen
+    
+    setTimeout(() => {
+        loadLevel(level);
+    }, 2500);
 }
 
 function startTimer() {
@@ -243,19 +273,24 @@ function startTimer() {
             // Time's up - treat as wrong answer
             clearInterval(timerInterval);
             showingResult = true;
+            lives--; // Timeout costs a life
+            if (typeof playGameSound === 'function') playGameSound('fail');
             render();
             
             setTimeout(() => {
                 showingResult = false;
-                currentQuestion++;
                 
-                if (currentQuestion >= shuffledQuestions.length) {
-                    endGame();
-                } else {
-                    timeLeft = 15;
-                    startTimer();
-                    render();
+                if (lives <= 0) {
+                    endGame(false);
+                    return;
                 }
+                
+                currentQuestionIndex++;
+                if (currentQuestionIndex >= currentLevelQuestions.length) {
+                    currentLevelQuestions = [...currentLevelQuestions].sort(() => Math.random() - 0.5);
+                    currentQuestionIndex = 0;
+                }
+                prepareNextQuestion();
             }, 1500);
         } else {
             render();
@@ -264,7 +299,28 @@ function startTimer() {
 }
 
 function render() {
-    // Background
+    // Level Up Screen Overlay
+    if (gameState === 'levelup') {
+        ctx.fillStyle = 'rgba(39, 174, 96, 0.9)'; // Green Agri theme
+        ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 56px Fredoka One, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('LEVEL UP! 🌟', gameCanvas.width / 2, gameCanvas.height / 2 - 20);
+        
+        ctx.font = 'bold 28px Nunito, sans-serif';
+        ctx.fillStyle = '#FFD93D';
+        ctx.fillText(`Entering Level ${level}`, gameCanvas.width / 2, gameCanvas.height / 2 + 40);
+        
+        let msg = level === 2 ? "Questions are harder! Time limit: 12s" : "Maximum Difficulty! Time limit: 10s";
+        ctx.font = '20px Nunito, sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(msg, gameCanvas.width / 2, gameCanvas.height / 2 + 80);
+        return;
+    }
+
+    // Normal Gameplay Background
     const gradient = ctx.createLinearGradient(0, 0, 0, gameCanvas.height);
     gradient.addColorStop(0, '#0f0c29');
     gradient.addColorStop(0.5, '#302b63');
@@ -272,60 +328,60 @@ function render() {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
     
-    const question = shuffledQuestions[currentQuestion];
-    
-    // Progress bar
-    const progress = (currentQuestion + 1) / shuffledQuestions.length;
+    if (!currentQuestion) return;
+
+    // Progress bar for the current level (5 questions per level)
+    const progress = questionsAnsweredInLevel / 5;
     ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.fillRect(20, 20, gameCanvas.width - 40, 10);
     ctx.fillStyle = '#6BCB77';
     ctx.fillRect(20, 20, (gameCanvas.width - 40) * progress, 10);
     
-    // Question counter
+    // Stats Header (Level, Lives, Score)
     ctx.fillStyle = '#ffffff';
-    ctx.font = '16px Nunito, sans-serif';
+    ctx.font = 'bold 18px Nunito, sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(`Question ${currentQuestion + 1}/${shuffledQuestions.length}`, 20, 55);
+    ctx.fillText(`Level ${level}`, 20, 55);
     
-    // Category badge
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#9B59B6';
-    ctx.font = 'bold 14px Nunito, sans-serif';
-    const categoryWidth = ctx.measureText(question.category).width + 20;
-    ctx.fillRect(gameCanvas.width / 2 - categoryWidth / 2, 40, categoryWidth, 25);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(question.category, gameCanvas.width / 2, 58);
+    ctx.fillText(`Lives: ${'❤️'.repeat(lives)}${'🖤'.repeat(3 - lives)}`, gameCanvas.width / 2, 55);
     
-    // Score
     ctx.textAlign = 'right';
-    ctx.font = 'bold 20px Nunito, sans-serif';
     ctx.fillStyle = '#FFD93D';
     ctx.fillText(`Score: ${score}`, gameCanvas.width - 20, 55);
     
+    // Category badge
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#27ae60'; // Agricultural green
+    ctx.font = 'bold 14px Nunito, sans-serif';
+    const categoryWidth = ctx.measureText(currentQuestion.category).width + 20;
+    ctx.fillRect(gameCanvas.width / 2 - categoryWidth / 2, 70, categoryWidth, 25);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(currentQuestion.category, gameCanvas.width / 2, 88);
+    
     // Timer
-    const timerColor = timeLeft > 10 ? '#6BCB77' : timeLeft > 5 ? '#FFD93D' : '#FF4757';
+    const timerColor = timeLeft > (level === 1 ? 8 : 5) ? '#6BCB77' : timeLeft > 3 ? '#FFD93D' : '#FF4757';
     ctx.fillStyle = timerColor;
     ctx.font = 'bold 36px Nunito, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(`⏱️ ${timeLeft}`, gameCanvas.width / 2, 110);
+    ctx.fillText(`⏱️ ${timeLeft}`, gameCanvas.width / 2, 130);
     
-    // Question text
+    // Question text (Word wrapped)
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 24px Nunito, sans-serif';
+    ctx.font = 'bold 22px Nunito, sans-serif';
     ctx.textAlign = 'center';
     
-    // Word wrap question
-    const maxWidth = gameCanvas.width - 80;
-    const words = question.question.split(' ');
+    const maxWidth = gameCanvas.width - 60;
+    const words = currentQuestion.question.split(' ');
     let line = '';
-    let y = 170;
+    let y = 180;
     
     for (const word of words) {
         const testLine = line + word + ' ';
         if (ctx.measureText(testLine).width > maxWidth) {
             ctx.fillText(line.trim(), gameCanvas.width / 2, y);
             line = word + ' ';
-            y += 35;
+            y += 32;
         } else {
             line = testLine;
         }
@@ -335,9 +391,9 @@ function render() {
     // Answer options
     const optionHeight = 60;
     const optionWidth = gameCanvas.width - 80;
-    const startY = gameCanvas.height / 2 - 20;
+    const startY = gameCanvas.height / 2 - 10;
     
-    for (let i = 0; i < question.options.length; i++) {
+    for (let i = 0; i < currentQuestion.options.length; i++) {
         const optionY = startY + i * (optionHeight + 15);
         
         let bgColor = 'rgba(255, 255, 255, 0.1)';
@@ -345,11 +401,11 @@ function render() {
         let textColor = '#ffffff';
         
         if (showingResult) {
-            if (i === question.correct) {
-                bgColor = 'rgba(107, 203, 119, 0.8)';
+            if (i === currentQuestion.correct) {
+                bgColor = 'rgba(107, 203, 119, 0.8)'; // Green if correct
                 borderColor = '#6BCB77';
-            } else if (i === selectedAnswer && i !== question.correct) {
-                bgColor = 'rgba(255, 71, 87, 0.8)';
+            } else if (i === selectedAnswer && i !== currentQuestion.correct) {
+                bgColor = 'rgba(255, 71, 87, 0.8)'; // Red if selected wrong
                 borderColor = '#FF4757';
             }
         } else if (selectedAnswer === i) {
@@ -374,7 +430,7 @@ function render() {
         
         // Option text
         ctx.font = '18px Nunito, sans-serif';
-        ctx.fillText(question.options[i], 100, optionY + 38);
+        ctx.fillText(currentQuestion.options[i], 100, optionY + 38);
     }
     
     // Instructions
@@ -382,18 +438,23 @@ function render() {
         ctx.font = '14px Nunito, sans-serif';
         ctx.fillStyle = '#a0a0a0';
         ctx.textAlign = 'center';
-        ctx.fillText('Click an option or press 1-4', gameCanvas.width / 2, gameCanvas.height - 30);
+        ctx.fillText('Click an option or press 1-4', gameCanvas.width / 2, gameCanvas.height - 20);
     }
 }
 
-function endGame() {
+function endGame(won) {
     gameState = 'ended';
+    if (typeof playGameSound === 'function') playGameSound(won ? 'success' : 'gameover');
     clearInterval(timerInterval);
+    
+    // 5 questions per level * 3 levels max = 15 total possible correct
+    let maxPossible = 15; 
+    let accuracy = Math.round((correctAnswers / (correctAnswers + (3 - lives))) * 100) || 0;
     
     submitScore(score, {
         correct_answers: correctAnswers,
-        total_questions: shuffledQuestions.length,
-        accuracy: Math.round((correctAnswers / shuffledQuestions.length) * 100)
+        level_reached: level,
+        accuracy: accuracy
     }).then(result => {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
         ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
@@ -401,15 +462,22 @@ function endGame() {
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 48px Fredoka One, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('🎉 Quiz Complete!', gameCanvas.width / 2, gameCanvas.height / 2 - 100);
+        
+        if (won) {
+            ctx.fillStyle = '#FFD93D';
+            ctx.fillText('🏆 QUIZ MASTER!', gameCanvas.width / 2, gameCanvas.height / 2 - 100);
+        } else {
+            ctx.fillStyle = '#FF4757';
+            ctx.fillText('💔 GAME OVER', gameCanvas.width / 2, gameCanvas.height / 2 - 100);
+        }
         
         ctx.font = 'bold 36px Nunito, sans-serif';
-        ctx.fillStyle = '#FFD93D';
+        ctx.fillStyle = '#ffffff';
         ctx.fillText(`Score: ${score}`, gameCanvas.width / 2, gameCanvas.height / 2 - 30);
         
         ctx.font = '24px Nunito, sans-serif';
         ctx.fillStyle = '#a0a0a0';
-        ctx.fillText(`${correctAnswers}/${shuffledQuestions.length} Correct (${Math.round((correctAnswers / shuffledQuestions.length) * 100)}%)`, gameCanvas.width / 2, gameCanvas.height / 2 + 20);
+        ctx.fillText(`Reached Level ${level} • ${correctAnswers} Correct`, gameCanvas.width / 2, gameCanvas.height / 2 + 20);
         
         if (result.success && result.data.points_earned > 0) {
             ctx.fillStyle = '#6BCB77';

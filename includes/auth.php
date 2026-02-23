@@ -345,7 +345,7 @@ class Auth {
     /**
      * Get intended URL after login
      */
-    public static function intended(string $default = '/dashboard.php'): string {
+    public static function intended(string $default = '/game-library/dashboard.php'): string {
         $url = $_SESSION['intended_url'] ?? $default;
         unset($_SESSION['intended_url']);
         return $url;
